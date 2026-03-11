@@ -19,6 +19,99 @@ Core user actions supported:
 - See completion progress as a percentage and progress bar
 - Track daily perfect-completion streak
 
+## Process Followed
+
+1. Set up Django project and created a dedicated `tasks` app.
+2. Configured DRF and URL routing for clean API structure.
+3. Implemented runtime persistence with a JSON storage helper.
+4. Built API endpoints for add, list, complete, and delete operations.
+5. Created a polished frontend page with Vue + Tailwind.
+6. Integrated frontend actions with backend APIs using async fetch calls.
+7. Added a creative feature (Momentum Streak) to go beyond baseline requirements.
+8. Validated by running migrations, Django checks, and full UI/API flow.
+
+## Working Flow
+
+1. User opens the app at `/`.
+2. Frontend loads tasks by calling `GET /api/tasks/`.
+3. When user adds a task, frontend calls `POST /api/tasks/`.
+4. Backend validates input, writes to JSON, and returns created task.
+5. When user toggles completion, frontend calls `PATCH /api/tasks/{id}/complete/`.
+6. Backend updates task status in JSON and returns updated object.
+7. When user deletes a task, frontend calls `DELETE /api/tasks/{id}/`.
+8. Progress bar and streak update in UI after each successful operation.
+
+## Flow Diagram
+
+```text
++----------------------------+
+| Start: User opens app      |
++----------------------------+
+		  |
+		  v
++----------------------------+
+| Frontend loads task list   |
+| GET /api/tasks/            |
++----------------------------+
+		  |
+		  v
++----------------------------+
+| Backend reads JSON store   |
+| runtime_tasks.json         |
++----------------------------+
+		  |
+		  v
++----------------------------+
+| Frontend renders tasks +   |
+| progress bar               |
++----------------------------+
+		  |
+		  v
+	+------------------+
+	| User Action?     |
+	+------------------+
+	 /        |        \
+	v         v         v
++----------------+ +----------------------+ +----------------------+
+| Add Task       | | Toggle Complete      | | Delete Task          |
+| POST /api/...  | | PATCH /api/...       | | DELETE /api/...      |
++----------------+ +----------------------+ +----------------------+
+	|                    |                          |
+	v                    v                          v
++----------------+ +----------------------+ +----------------------+
+| Validate title | | Update task status   | | Remove task          |
+| Save to JSON   | | Save to JSON         | | Save to JSON         |
++----------------+ +----------------------+ +----------------------+
+	|                    |                          |
+	+---------+----------+--------------+-----------+
+		    |                         |
+		    v                         |
+     +--------------------------+         |
+     | Return API response      |<--------+
+     +--------------------------+
+		    |
+		    v
+     +--------------------------+
+     | Update UI + Progress     |
+     | Recalculate Streak       |
+     +--------------------------+
+		    |
+		    v
+     +--------------------------+
+     | End                      |
+     +--------------------------+
+```
+
+## What I Did
+
+- Designed and implemented full backend API with Django REST Framework.
+- Added clean separation between API logic and storage logic.
+- Built a responsive task UI with add, complete, delete, and progress indicator.
+- Connected frontend and backend with real API calls.
+- Implemented JSON-based runtime persistence.
+- Added unique feature: Momentum Streak with completion celebration effect.
+- Prepared project with clear documentation and deployment notes.
+
 ## Tech Stack
 
 - Backend: Django 6, Django REST Framework
