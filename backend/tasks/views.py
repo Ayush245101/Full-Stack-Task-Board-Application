@@ -2,17 +2,12 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 from django.http import HttpRequest
-from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from .storage import load_tasks, save_tasks
-
-
-def index(request: HttpRequest):
-	return render(request, 'tasks/index.html')
 
 
 @csrf_exempt
