@@ -130,8 +130,6 @@ Base URL: http://127.0.0.1:8000
 - Converted architecture to strict separation:
   - Frontend logic only in frontend
   - Backend logic only in backend
-- Replaced default React starter with full task manager UI.
-- Kept backend as API-only (removed template rendering route).
 - Added Vite proxy for smooth frontend-backend local integration.
 - Implemented and validated all required task operations.
 - Added and preserved the creative Momentum Streak feature.
