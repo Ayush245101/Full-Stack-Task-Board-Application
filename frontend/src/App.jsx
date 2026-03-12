@@ -2,6 +2,31 @@ import { useEffect, useMemo, useState } from 'react'
 import './App.css'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || ''
+const TASKS_API_PATH = (import.meta.env.VITE_TASKS_API_PATH || '/api/tasks/').replace(/\/?$/, '/')
+const CSRF_API_PATH = import.meta.env.VITE_CSRF_API_PATH || '/api/csrf/'
+
+
+function buildApiUrl(path) {
+  if (!API_BASE) {
+    return path
+  }
+  const normalizedBase = API_BASE.endsWith('/') ? API_BASE.slice(0, -1) : API_BASE
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`
+  return `${normalizedBase}${normalizedPath}`
+}
+
+
+function getCookie(name) {
+  const cookieName = `${name}=`
+  const cookies = document.cookie.split(';')
+  for (const cookie of cookies) {
+    const trimmed = cookie.trim()
+    if (trimmed.startsWith(cookieName)) {
+      return decodeURIComponent(trimmed.slice(cookieName.length))
+    }
+  }
+  return ''
+}
 
 function todayKey() {
   return new Date().toISOString().slice(0, 10)
@@ -27,7 +52,9 @@ function App() {
     setLoading(true)
     setError('')
     try {
-      const response = await fetch(`${API_BASE}/api/tasks/`)
+      const response = await fetch(buildApiUrl(TASKS_API_PATH), {
+        credentials: 'include',
+      })
       if (!response.ok) {
         throw new Error('Unable to load tasks.')
       }
@@ -61,9 +88,13 @@ function App() {
 
     setError('')
     try {
-      const response = await fetch(`${API_BASE}/api/tasks/`, {
+      const response = await fetch(buildApiUrl(TASKS_API_PATH), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken'),
+        },
         body: JSON.stringify({ title }),
       })
 
@@ -84,9 +115,13 @@ function App() {
   const toggleTask = async (task, completed) => {
     setError('')
     try {
-      const response = await fetch(`${API_BASE}/api/tasks/${task.id}/complete/`, {
+      const response = await fetch(buildApiUrl(`${TASKS_API_PATH}${task.id}/complete/`), {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken'),
+        },
         body: JSON.stringify({ completed }),
       })
 
@@ -111,8 +146,12 @@ function App() {
   const removeTask = async (taskId) => {
     setError('')
     try {
-      const response = await fetch(`${API_BASE}/api/tasks/${taskId}/`, {
+      const response = await fetch(buildApiUrl(`${TASKS_API_PATH}${taskId}/`), {
         method: 'DELETE',
+        credentials: 'include',
+        headers: {
+          'X-CSRFToken': getCookie('csrftoken'),
+        },
       })
 
       if (!response.ok && response.status !== 204) {
@@ -127,7 +166,18 @@ function App() {
     }
   }
 
+  const initializeCsrf = async () => {
+    try {
+      await fetch(buildApiUrl(CSRF_API_PATH), {
+        credentials: 'include',
+      })
+    } catch {
+      // CSRF bootstrap will be retried implicitly on user action.
+    }
+  }
+
   useEffect(() => {
+    initializeCsrf()
     loadTasks()
   }, [])
 

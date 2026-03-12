@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -25,7 +26,7 @@ SECRET_KEY = 'django-insecure-y0qfg-pd@2+_vrxh5arlm4x0z+-li7tw+mt*qj^xr%^y16_ys^
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
 
 
 # Application definition
@@ -120,4 +121,18 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-CORS_ALLOW_ALL_ORIGINS = True
+
+def _split_csv_env(name: str, default: str) -> list[str]:
+    raw = os.getenv(name, default)
+    return [item.strip() for item in raw.split(',') if item.strip()]
+
+
+CORS_ALLOWED_ORIGINS = _split_csv_env(
+    'CORS_ALLOWED_ORIGINS',
+    'http://127.0.0.1:5173,http://localhost:5173',
+)
+CORS_ALLOW_CREDENTIALS = True
+CSRF_TRUSTED_ORIGINS = _split_csv_env(
+    'CSRF_TRUSTED_ORIGINS',
+    'http://127.0.0.1:5173,http://localhost:5173',
+)

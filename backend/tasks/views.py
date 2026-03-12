@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 from django.http import HttpRequest
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import ensure_csrf_cookie
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -10,7 +10,12 @@ from rest_framework.response import Response
 from .storage import load_tasks, save_tasks
 
 
-@csrf_exempt
+@api_view(['GET'])
+@ensure_csrf_cookie
+def csrf_token(request: HttpRequest):
+	return Response({'detail': 'CSRF cookie set'})
+
+
 @api_view(['GET', 'POST'])
 def tasks_collection(request: HttpRequest):
 	tasks = load_tasks()
@@ -33,7 +38,6 @@ def tasks_collection(request: HttpRequest):
 	return Response(task, status=status.HTTP_201_CREATED)
 
 
-@csrf_exempt
 @api_view(['PATCH'])
 def complete_task(request: HttpRequest, task_id: str):
 	tasks = load_tasks()
@@ -52,7 +56,6 @@ def complete_task(request: HttpRequest, task_id: str):
 	return Response({'error': 'Task not found.'}, status=status.HTTP_404_NOT_FOUND)
 
 
-@csrf_exempt
 @api_view(['DELETE'])
 def delete_task(request: HttpRequest, task_id: str):
 	tasks = load_tasks()
